@@ -5,7 +5,7 @@ function Snake(containerId) {
     this.gameOver = false;
     this.containerId = containerId;
     this.ctx = null;
-    this.gridConsts = {
+    this.gridProps = {
         blockSize: 16,
         numColumns: 32,
         numRows: 32,
@@ -22,7 +22,7 @@ function Snake(containerId) {
 
 Snake.prototype.init = function() {
     console.log(this.welcome);
-    const { blockSize, numColumns, numRows, gridGap } = this.gridConsts;
+    const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
     // Initialise the canvas and add it to the dom
     const canvas = document.createElement('canvas');
@@ -53,7 +53,7 @@ Snake.prototype.drawSquare = function(ctx, x, y, size, colour) {
 };
 
 Snake.prototype.render = function(ctx) {
-    const { blockSize, numColumns, numRows, gridGap } = this.gridConsts;
+    const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
     // Clear canvas
     this.drawRect(ctx, 0, 0, ctx.canvas.width, ctx.canvas.height, '#EEE');
