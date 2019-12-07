@@ -26,13 +26,9 @@ Snake.prototype.init = function() {
 
     // Initialise the canvas and add it to the dom
     const canvas = document.createElement('canvas');
-    canvas.width = 
-        blockSize * numColumns +
-        (numColumns - 1) * gridGap;
-    canvas.height = 
-        blockSize * numRows +
-        (numRows - 1) * gridGap;
-        const container = document.getElementById(this.containerId);
+    canvas.width = blockSize * numColumns + (numColumns - 1) * gridGap;
+    canvas.height = blockSize * numRows + (numRows - 1) * gridGap;
+    const container = document.getElementById(this.containerId);
     container.appendChild(canvas);
     this.ctx = canvas.getContext('2d');
 };
