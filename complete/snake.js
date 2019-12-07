@@ -20,19 +20,20 @@ function Snake(containerId) {
             },
             color: '#F00',
             bodyColor: '#F88',
-            direction: 'right'
+            direction: 'right',
+            pendingDirection: 'right'
         }
     }
 
-    this.init(); // Initialise the game
+    this.init(self.state); // Initialise the game
 
     this.gameLoop = setInterval(function() { // Game loop
         self.update(self.state);
         self.render(self.ctx, self.state);
-    }, 200);
+    }, 150);
 }
 
-Snake.prototype.init = function() {
+Snake.prototype.init = function(state) {
     console.log(this.welcome);
     const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
@@ -43,10 +44,59 @@ Snake.prototype.init = function() {
     const container = document.getElementById(this.containerId);
     container.appendChild(canvas);
     this.ctx = canvas.getContext('2d');
+
+    // Add keyboard events
+    window.addEventListener('keypress', function (e) {  
+        const { snake } = state;
+        if (e.keyCode === 37 || e.keyCode === 97) { // left
+            if (snake.direction !== 'right') {
+                snake.pendingDirection = 'left';
+            }
+        } else if (e.keyCode === 39 || e.keyCode === 100) { // right
+            if (snake.direction !== 'left') {
+                snake.pendingDirection = 'right';
+            }
+        } else if (e.keyCode === 38 || e.keyCode === 119) { // up
+            if (snake.direction !== 'down') {
+                snake.pendingDirection = 'up';
+            }
+        } else if (e.keyCode === 40 || e.keyCode === 115) {
+            if (snake.direction !== 'up') {
+                snake.pendingDirection = 'down';
+            }    
+        }
+    });
 };
+
+Snake.prototype.move = function(snake, pos, preserveTail) {
+    // Create new head
+    const oldHead = snake.head;
+    const newHead = {
+        x: pos.x,
+        y: pos.y,
+        next: oldHead,
+    }
+    snake.head = newHead;
+
+    // Useful for when we've eaten food
+    if (preserveTail) {
+        return;
+    }
+
+    // Delete old tail
+    let node = snake.head.next;
+    while (node && node.next) {
+        if (!node.next.next) {
+            node.next = null;
+        }
+    }
+}
 
 Snake.prototype.update = function(state) {
     const { snake } = state;
+
+    // Apply direction provided from event handlers
+    snake.direction = snake.pendingDirection;
 
     // Determine new position for snake head
     let pos = {x: snake.head.x, y: snake.head.y};
@@ -57,8 +107,11 @@ Snake.prototype.update = function(state) {
         case 'down': pos.y += 1; break;
     }
 
-    snake.head.x = pos.x;
-    snake.head.y = pos.y;
+    // Check if position is legal
+
+    const foodEaten = false;
+    // If it is legal, set new head position
+    this.move(snake, pos, foodEaten);
 
 };
 
@@ -86,7 +139,7 @@ Snake.prototype.drawCell = function(ctx, x, y, color) {
 }
 
 Snake.prototype.render = function(ctx, state) {
-    const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
+    const { numColumns, numRows } = this.gridProps;
 
     // Clear canvas
     this.drawRect(ctx, 0, 0, ctx.canvas.width, ctx.canvas.height, '#EEE');
