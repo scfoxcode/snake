@@ -5,20 +5,24 @@ function Snake(containerId) {
     this.containerId = containerId;
     this.ctx = null;
     this.gridProps = {
-        blockSize: 16,
-        numColumns: 32,
-        numRows: 32,
+        blockSize: 32,
+        numColumns: 16,
+        numRows: 16,
         gridGap: 2
     };
     this.state = {}; // Set in init
+    this.play();
+}
 
+Snake.prototype.play = function() {
+    var self = this;
     this.init(self.state); // Initialise the game
 
     this.gameLoop = setInterval(function() { // Game loop
         self.update(self.state);
         self.render(self.ctx, self.state);
     }, 150);
-}
+};
 
 Snake.prototype.init = function(state) {
     console.log(this.welcome);
@@ -106,6 +110,7 @@ Snake.prototype.move = function(snake, pos, preserveTail) {
         x: pos.x,
         y: pos.y,
         next: oldHead,
+        uidPos: this.uidPos(pos)
     }
     snake.head = newHead;
 
@@ -152,6 +157,7 @@ Snake.prototype.listFreeCells = function() {
 
 Snake.prototype.update = function(state) {
     const { snake, food } = state;
+    const { numColumns, numRows } = this.gridProps;
 
     // Apply direction provided from event handlers
     snake.direction = snake.pendingDirection;
@@ -165,29 +171,43 @@ Snake.prototype.update = function(state) {
         case 'down': pos.y += 1; break;
     }
 
-    // Check if position is legal
-
     let foodEaten = false;
     const foodUid = this.uidPos(pos);
     for (let i=0; i<food.length; i++) {
         if (food[i].uid === foodUid) {
             foodEaten = true;
             food.splice(i, 1);
-            console.log("this happened");
             break;
         }
     }
 
     // If it is legal, set new head position
     this.move(snake, pos, foodEaten);
+
+    // Create food
     if (!food.length) {
         const freeCells = this.listFreeCells();
         const pick = Math.floor(Math.random() * (freeCells.length -1));
         const foodPos = this.posFromUid(freeCells[pick]);
         state.food.push({pos: foodPos, uid: freeCells[pick]});
     }
-    
-    
+
+    // Check if position is legal
+    let legal = true;
+    // Check if snake head is outside of the board
+    if (pos.x < 0 || pos.y < 0 || pos.x >= numColumns || pos.y >= numRows) {
+        legal = false;
+    } 
+    // Check if snake head intersects an existing snake element
+    this.mapSnakeNodes(snake, (node, index) => {
+        if (index === 0) {
+            return;
+        }
+        if (snake.head.uidPos === node.uidPos) {
+            legal = false;
+        }
+    });
+    state.gameOver = !legal;
 };
 
 // BEGIN RENDER FUNCTIONS
