@@ -1,5 +1,5 @@
 // Function to export that contains the game
-function Snake(containerId) {
+function SnakeGame(containerId) {
     const self = this;
     this.welcome = 'Hello, lets play Snake!';
     this.gameOver = false;
@@ -22,7 +22,7 @@ function Snake(containerId) {
 
 // Shortcut for adding keyboard input
 // Must be modified for your snake data structure
-// Snake.prototype.keyboardHandler = function(e) {
+// SnakeGame.prototype.keyboardHandler = function(e) {
 //     console.log("This happened");
 //     const { snake } = this.state;
 //     if (e.key === 'ArrowLeft' || e.key === 'a') {
@@ -44,7 +44,7 @@ function Snake(containerId) {
 //     }
 // };
 
-Snake.prototype.init = function() {
+SnakeGame.prototype.init = function() {
     console.log(this.welcome);
     const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
@@ -57,22 +57,22 @@ Snake.prototype.init = function() {
     this.ctx = canvas.getContext('2d');
 };
 
-Snake.prototype.update = function() {
+SnakeGame.prototype.update = function() {
 };
 
 // BEGIN RENDER FUNCTIONS
-Snake.prototype.drawRect = function(ctx, x, y, width, height, colour) {
+SnakeGame.prototype.drawRect = function(ctx, x, y, width, height, colour) {
     ctx.beginPath();
     ctx.rect(x, y, width, height);
     ctx.fillStyle = colour;
     ctx.fill();
 };
 
-Snake.prototype.drawSquare = function(ctx, x, y, size, colour) {
+SnakeGame.prototype.drawSquare = function(ctx, x, y, size, colour) {
     this.drawRect(ctx, x, y, size, size, colour);
 };
 
-Snake.prototype.render = function(ctx) {
+SnakeGame.prototype.render = function(ctx) {
     const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
     // Clear canvas
