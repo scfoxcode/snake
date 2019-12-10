@@ -6,9 +6,9 @@ function Snake(containerId) {
     this.containerId = containerId;
     this.ctx = null;
     this.gridProps = {
-        blockSize: 16,
-        numColumns: 32,
-        numRows: 32,
+        blockSize: 32,
+        numColumns: 16,
+        numRows: 16,
         gridGap: 2
     };
 
@@ -17,8 +17,32 @@ function Snake(containerId) {
     this.gameLoop = setInterval(function() { // Game loop
         self.update();
         self.render(self.ctx);
-    }, 200);
+    }, 150);
 }
+
+// Shortcut for adding keyboard input
+// Must be modified for your snake data structure
+// Snake.prototype.keyboardHandler = function(e) {
+//     console.log("This happened");
+//     const { snake } = this.state;
+//     if (e.key === 'ArrowLeft' || e.key === 'a') {
+//         if (snake.direction !== 'right') {
+//             snake.pendingDirection = 'left';
+//         }
+//     } else if (e.key === 'ArrowRight' || e.key === 'd') {
+//         if (snake.direction !== 'left') {
+//             snake.pendingDirection = 'right';
+//         }
+//     } else if (e.key === 'ArrowUp' || e.key === 'w') {
+//         if (snake.direction !== 'down') {
+//             snake.pendingDirection = 'up';
+//         }
+//     } else if (e.key === 'ArrowDown' || e.key === 's') {
+//         if (snake.direction !== 'up') {
+//             snake.pendingDirection = 'down';
+//         }    
+//     }
+// };
 
 Snake.prototype.init = function() {
     console.log(this.welcome);
