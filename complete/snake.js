@@ -1,5 +1,18 @@
+function Snake(startPos, startPosHash) {
+    this.head = {
+        x: startPos.x,
+        y: startPos.y,
+        uidPos: startPosHash,
+        next: null,
+    };
+    this.color = '#F00';
+    this.bodyColor = '#F88';
+    this.direction = 'right';
+    this.pendingDirection = 'right';
+}
+
 // Function to export that contains the game
-function Snake(containerId) {
+function SnakeGame(containerId) {
     const self = this;
     this.welcome = 'Hello, lets play Snake!';
     this.containerId = containerId;
@@ -14,18 +27,16 @@ function Snake(containerId) {
     this.play();
 }
 
-Snake.prototype.play = function() {
-    var self = this;
-    this.init(self.state); // Initialise the game
+SnakeGame.prototype.play = function() {
+    this.init(this.state); // Initialise the game
 
-    this.gameLoop = setInterval(function() { // Game loop
-        self.update(self.state);
-        self.render(self.ctx, self.state);
+    this.gameLoop = setInterval(() => { // Game loop
+        this.update(this.state);
+        this.render(this.ctx, this.state);
     }, 150);
 };
 
-Snake.prototype.keyboardHandler = function(e) {
-    console.log("This happened");
+SnakeGame.prototype.keyboardHandler = function(e) {
     const { snake } = this.state;
     if (e.key === 'ArrowLeft' || e.key === 'a') {
         if (snake.direction !== 'right') {
@@ -46,7 +57,7 @@ Snake.prototype.keyboardHandler = function(e) {
     }
 };
 
-Snake.prototype.init = function(state) {
+SnakeGame.prototype.init = function(state) {
     console.log(this.welcome);
     state.gameOver = false;
     const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
@@ -59,28 +70,15 @@ Snake.prototype.init = function(state) {
     const canvas = document.createElement('canvas');
     canvas.width = blockSize * numColumns + (numColumns - 1) * gridGap;
     canvas.height = blockSize * numRows + (numRows - 1) * gridGap;
-    
     container.appendChild(canvas);
     this.ctx = canvas.getContext('2d');
 
     // Initialise the snake state
-    state.snake = {
-        head: {
-            x: Math.floor(this.gridProps.numColumns / 2),
-            y: Math.floor(this.gridProps.numRows / 2),
-            next: null
-        },
-        color: '#F00',
-        bodyColor: '#F88',
-        direction: 'right',
-        pendingDirection: 'right'
-    };
-    state.snake.head.uidPos = this.uidPos({
-        x: state.snake.head.x,
-        y: state.snake.head.y
-    });
-    
-    // Snake should be called game, and state.snake should be it's own object
+    const startPosition = {
+        x: Math.floor(this.gridProps.numColumns / 2),
+        y: Math.floor(this.gridProps.numRows / 2),
+    }
+    state.snake = new Snake(startPosition, this.uidPos(startPosition));
 
     // Set food state
     state.food = [];
@@ -90,16 +88,16 @@ Snake.prototype.init = function(state) {
     window.addEventListener('keydown', this.keyboardHandler.bind(this));
 };
 
-Snake.prototype.uidPos = function(pos) {
+SnakeGame.prototype.uidPos = function(pos) {
     return ('' + pos.x + '_' + pos.y);
 };
 
-Snake.prototype.posFromUid = function(uid) {
+SnakeGame.prototype.posFromUid = function(uid) {
     const values = uid.split('_');
     return {x: parseInt(values[0]), y: parseInt(values[1])};
 };
 
-Snake.prototype.mapSnakeNodes = function(snake, f) {
+SnakeGame.prototype.mapSnakeNodes = function(snake, f) {
     const results = [];
     let node = snake.head;
     let index = 0;
@@ -111,7 +109,7 @@ Snake.prototype.mapSnakeNodes = function(snake, f) {
     return results;
 };
 
-Snake.prototype.move = function(snake, pos, preserveTail) {
+SnakeGame.prototype.move = function(snake, pos, preserveTail) {
     // Create new head
     const oldHead = snake.head;
     const newHead = {
@@ -135,11 +133,10 @@ Snake.prototype.move = function(snake, pos, preserveTail) {
         }
         node = node.next;
     }
-    // Probably makes sense to store next and prev, makes this much simpler
 }
 
 // This is expensive, minimise calls
-Snake.prototype.listFreeCells = function() {
+SnakeGame.prototype.listFreeCells = function() {
     const { numColumns, numRows } = this.gridProps;
     const { snake, food } = this.state;
     const takenCells = [];
@@ -148,6 +145,9 @@ Snake.prototype.listFreeCells = function() {
     this.mapSnakeNodes(snake, node => {
         takenCells.push(node.uidPos);
     });
+
+    // List cells existing food occupies
+    food.forEach(f => takenCells.push(f.uid));
 
     // Determine free cells
     const freeCells = [];
@@ -163,7 +163,7 @@ Snake.prototype.listFreeCells = function() {
     return freeCells;
 }
 
-Snake.prototype.update = function(state) {
+SnakeGame.prototype.update = function(state) {
     const { snake, food } = state;
     const { numColumns, numRows } = this.gridProps;
 
@@ -208,10 +208,7 @@ Snake.prototype.update = function(state) {
     } 
     // Check if snake head intersects an existing snake element
     this.mapSnakeNodes(snake, (node, index) => {
-        if (index === 0) {
-            return;
-        }
-        if (snake.head.uidPos === node.uidPos) {
+        if (index > 0 && snake.head.uidPos === node.uidPos) {
             legal = false;
         }
     });
@@ -222,18 +219,18 @@ Snake.prototype.update = function(state) {
 };
 
 // BEGIN RENDER FUNCTIONS
-Snake.prototype.drawRect = function(ctx, x, y, width, height, color) {
+SnakeGame.prototype.drawRect = function(ctx, x, y, width, height, color) {
     ctx.beginPath();
     ctx.rect(x, y, width, height);
     ctx.fillStyle = color;
     ctx.fill();
 };
 
-Snake.prototype.drawSquare = function(ctx, x, y, size, color) {
+SnakeGame.prototype.drawSquare = function(ctx, x, y, size, color) {
     this.drawRect(ctx, x, y, size, size, color);
 };
 
-Snake.prototype.drawCell = function(ctx, x, y, color) {
+SnakeGame.prototype.drawCell = function(ctx, x, y, color) {
     const { blockSize, gridGap } = this.gridProps;
     this.drawSquare(
         ctx,
@@ -244,7 +241,7 @@ Snake.prototype.drawCell = function(ctx, x, y, color) {
     );
 }
 
-Snake.prototype.render = function(ctx, state) {
+SnakeGame.prototype.render = function(ctx, state) {
     const { numColumns, numRows } = this.gridProps;
 
     // Clear canvas
