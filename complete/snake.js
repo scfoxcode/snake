@@ -24,16 +24,42 @@ Snake.prototype.play = function() {
     }, 150);
 };
 
+Snake.prototype.keyboardHandler = function(e) {
+    console.log("This happened");
+    const { snake } = this.state;
+    if (e.key === 'ArrowLeft' || e.key === 'a') {
+        if (snake.direction !== 'right') {
+            snake.pendingDirection = 'left';
+        }
+    } else if (e.key === 'ArrowRight' || e.key === 'd') {
+        if (snake.direction !== 'left') {
+            snake.pendingDirection = 'right';
+        }
+    } else if (e.key === 'ArrowUp' || e.key === 'w') {
+        if (snake.direction !== 'down') {
+            snake.pendingDirection = 'up';
+        }
+    } else if (e.key === 'ArrowDown' || e.key === 's') {
+        if (snake.direction !== 'up') {
+            snake.pendingDirection = 'down';
+        }    
+    }
+};
+
 Snake.prototype.init = function(state) {
     console.log(this.welcome);
     state.gameOver = false;
     const { blockSize, numColumns, numRows, gridGap } = this.gridProps;
 
+    // Clear any existing items from parent container
+    const container = document.getElementById(this.containerId);
+    container.innerHTML = '';
+
     // Initialise the canvas and add it to the dom
     const canvas = document.createElement('canvas');
     canvas.width = blockSize * numColumns + (numColumns - 1) * gridGap;
     canvas.height = blockSize * numRows + (numRows - 1) * gridGap;
-    const container = document.getElementById(this.containerId);
+    
     container.appendChild(canvas);
     this.ctx = canvas.getContext('2d');
 
@@ -59,27 +85,9 @@ Snake.prototype.init = function(state) {
     // Set food state
     state.food = [];
 
-    // Add keyboard events
-    window.addEventListener('keydown', function (e) {  
-        const { snake } = state;
-        if (e.key === 'ArrowLeft' || e.key === 'a') {
-            if (snake.direction !== 'right') {
-                snake.pendingDirection = 'left';
-            }
-        } else if (e.key === 'ArrowRight' || e.key === 'd') {
-            if (snake.direction !== 'left') {
-                snake.pendingDirection = 'right';
-            }
-        } else if (e.key === 'ArrowUp' || e.key === 'w') {
-            if (snake.direction !== 'down') {
-                snake.pendingDirection = 'up';
-            }
-        } else if (e.key === 'ArrowDown' || e.key === 's') {
-            if (snake.direction !== 'up') {
-                snake.pendingDirection = 'down';
-            }    
-        }
-    });
+    // Clear any existing handlers and add new ones
+    window.removeEventListener('keydown', this.keyboardHandler.bind(this));
+    window.addEventListener('keydown', this.keyboardHandler.bind(this));
 };
 
 Snake.prototype.uidPos = function(pos) {
@@ -208,6 +216,9 @@ Snake.prototype.update = function(state) {
         }
     });
     state.gameOver = !legal;
+    if (state.gameOver) {
+        this.init(state);
+    }
 };
 
 // BEGIN RENDER FUNCTIONS
